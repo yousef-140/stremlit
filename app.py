@@ -16,7 +16,7 @@ headers = {
 
 def query(user_message):
     payload = {
-        "model": "llama3-8b-8192",
+        "model": "llama-3.1-8b-instant",
         "messages": [{"role": "user", "content": user_message}]
     }
     response = requests.post(API_URL, headers=headers, json=payload)
