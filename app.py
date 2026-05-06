@@ -5,17 +5,27 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-HF_TOKEN = os.getenv("HF_TOKEN")
+GROQ_API_KEY = os.getenv("HF_TOKEN")
 
-API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 headers = {
-    "Authorization": f"Bearer {HF_TOKEN}"
+    "Authorization": f"Bearer {GROQ_API_KEY}",
+    "Content-Type": "application/json"
 }
 
-def query(payload):
+def query(user_message):
+    payload = {
+        "model": "llama3-8b-8192",
+        "messages": [{"role": "user", "content": user_message}]
+    }
     response = requests.post(API_URL, headers=headers, json=payload)
-    return response.json()
+    result = response.json()
+    
+    if "choices" in result:
+        return result["choices"][0]["message"]["content"]
+    else:
+        return f"Error: {result}"
 
 st.title("AI Chat App")
 
@@ -26,11 +36,5 @@ if st.button("Generate"):
         st.warning("Please enter a question first.")
     else:
         with st.spinner("Thinking..."):
-            output = query({"inputs": user_input})
-
-        if isinstance(output, list):
-            st.success(output[0].get("generated_text", output))
-        elif "error" in output:
-            st.error(f"Error: {output['error']}")
-        else:
-            st.write(output)
+            output = query(user_input)
+        st.write(output)
